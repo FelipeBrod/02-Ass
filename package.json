@@ -1,0 +1,14 @@
+{
+  "name": "02-ass",
+  "version": "1.0.0",
+  "description": "Tower Glass with physics",
+  "main": "02-Felipe.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Felipe Rodrigues",
+  "license": "ISC",
+  "dependencies": {
+    "three": "^0.127.0"
+  }
+}

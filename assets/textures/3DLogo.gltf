@@ -1,0 +1,414 @@
+{
+    "accessors": [
+        {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 2860,
+            "max": [
+                0.05409961938858032,
+                0.11789949238300323,
+                0.0059055145829916
+            ],
+            "min": [
+                -0.054099634289741516,
+                -3.485183697193861e-09,
+                -0.005905509926378727
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": 2860,
+            "type": "VEC2"
+        },
+        {
+            "bufferView": 2,
+            "componentType": 5126,
+            "count": 2860,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 3,
+            "componentType": 5123,
+            "count": 4122,
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 4,
+            "componentType": 5123,
+            "count": 3,
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 5,
+            "componentType": 5123,
+            "count": 2376,
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 6,
+            "componentType": 5123,
+            "count": 3,
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 7,
+            "componentType": 5123,
+            "count": 4122,
+            "type": "SCALAR"
+        }
+    ],
+    "asset": {
+        "generator": "Adobe Creative Cloud",
+        "version": "2.0"
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 34320
+        },
+        {
+            "buffer": 0,
+            "byteLength": 22880,
+            "byteOffset": 34320
+        },
+        {
+            "buffer": 0,
+            "byteLength": 34320,
+            "byteOffset": 57200
+        },
+        {
+            "buffer": 0,
+            "byteLength": 8244,
+            "byteOffset": 91520
+        },
+        {
+            "buffer": 0,
+            "byteLength": 6,
+            "byteOffset": 99764
+        },
+        {
+            "buffer": 0,
+            "byteLength": 4752,
+            "byteOffset": 99770
+        },
+        {
+            "buffer": 0,
+            "byteLength": 6,
+            "byteOffset": 104522
+        },
+        {
+            "buffer": 0,
+            "byteLength": 8244,
+            "byteOffset": 104528
+        },
+        {
+            "buffer": 0,
+            "byteLength": 208647,
+            "byteOffset": 112772
+        },
+        {
+            "buffer": 0,
+            "byteLength": 6628,
+            "byteOffset": 321419
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 328047,
+            "uri": "3DLogo.bin"
+        }
+    ],
+    "extensionsRequired": [
+        "KHR_texture_transform",
+        "KHR_texture_transform",
+        "KHR_texture_transform",
+        "KHR_texture_transform"
+    ],
+    "extensionsUsed": [
+        "KHR_texture_transform",
+        "KHR_texture_transform",
+        "KHR_texture_transform",
+        "KHR_texture_transform"
+    ],
+    "images": [
+        {
+            "bufferView": 8,
+            "mimeType": "image/png",
+            "name": "Felipe Rodrigues_logo.PNG"
+        },
+        {
+            "bufferView": 9,
+            "mimeType": "image/png",
+            "name": "Felipe Rodrigues_logo Extrusion Material - Default Texture.PNG"
+        }
+    ],
+    "materials": [
+        {
+            "alphaMode": "OPAQUE",
+            "doubleSided": true,
+            "emissiveFactor": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "name": "Felipe Rodrigues_logo Front Inflation Material",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.5,
+                    0.5,
+                    0.5,
+                    1.0
+                ],
+                "baseColorTexture": {
+                    "extensions": {
+                        "KHR_texture_transform": {
+                            "offset": [
+                                0.29137933254241943,
+                                0.0008491173502989113
+                            ],
+                            "rotation": 0.0,
+                            "scale": [
+                                0.41647136211395264,
+                                0.9983019232749939
+                            ]
+                        }
+                    },
+                    "index": 0
+                },
+                "metallicFactor": 0.07999999821186066,
+                "roughnessFactor": 0.3333333432674408
+            }
+        },
+        {
+            "alphaMode": "OPAQUE",
+            "doubleSided": true,
+            "emissiveFactor": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "name": "Felipe Rodrigues_logo Front Bevel Material",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.5,
+                    0.5,
+                    0.5,
+                    1.0
+                ],
+                "baseColorTexture": {
+                    "extensions": {
+                        "KHR_texture_transform": {
+                            "offset": [
+                                0.29137933254241943,
+                                0.0008491173502989113
+                            ],
+                            "rotation": 0.0,
+                            "scale": [
+                                0.41647136211395264,
+                                0.9983019232749939
+                            ]
+                        }
+                    },
+                    "index": 0
+                },
+                "metallicFactor": 0.07999999821186066,
+                "roughnessFactor": 0.3333333432674408
+            }
+        },
+        {
+            "alphaMode": "OPAQUE",
+            "doubleSided": true,
+            "emissiveFactor": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "name": "Felipe Rodrigues_logo Extrusion Material",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.5,
+                    0.5,
+                    0.5,
+                    1.0
+                ],
+                "baseColorTexture": {
+                    "index": 1
+                },
+                "metallicFactor": 0.07999999821186066,
+                "roughnessFactor": 0.3333333432674408
+            }
+        },
+        {
+            "alphaMode": "OPAQUE",
+            "doubleSided": true,
+            "emissiveFactor": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "name": "Felipe Rodrigues_logo Back Bevel Material",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.5,
+                    0.5,
+                    0.5,
+                    1.0
+                ],
+                "baseColorTexture": {
+                    "extensions": {
+                        "KHR_texture_transform": {
+                            "offset": [
+                                0.29137933254241943,
+                                0.0008491173502989113
+                            ],
+                            "rotation": 0.0,
+                            "scale": [
+                                0.41647136211395264,
+                                0.9983019232749939
+                            ]
+                        }
+                    },
+                    "index": 0
+                },
+                "metallicFactor": 0.07999999821186066,
+                "roughnessFactor": 0.3333333432674408
+            }
+        },
+        {
+            "alphaMode": "OPAQUE",
+            "doubleSided": true,
+            "emissiveFactor": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "name": "Felipe Rodrigues_logo Back Inflation Material",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.5,
+                    0.5,
+                    0.5,
+                    1.0
+                ],
+                "baseColorTexture": {
+                    "extensions": {
+                        "KHR_texture_transform": {
+                            "offset": [
+                                0.29137933254241943,
+                                0.0008491173502989113
+                            ],
+                            "rotation": 0.0,
+                            "scale": [
+                                0.41647136211395264,
+                                0.9983019232749939
+                            ]
+                        }
+                    },
+                    "index": 0
+                },
+                "metallicFactor": 0.07999999821186066,
+                "roughnessFactor": 0.3333333432674408
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "name": "Felipe Rodrigues_logo",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 2,
+                        "POSITION": 0,
+                        "TEXCOORD_0": 1
+                    },
+                    "indices": 3,
+                    "material": 0,
+                    "mode": 4
+                },
+                {
+                    "attributes": {
+                        "NORMAL": 2,
+                        "POSITION": 0,
+                        "TEXCOORD_0": 1
+                    },
+                    "indices": 4,
+                    "material": 1,
+                    "mode": 4
+                },
+                {
+                    "attributes": {
+                        "NORMAL": 2,
+                        "POSITION": 0,
+                        "TEXCOORD_0": 1
+                    },
+                    "indices": 5,
+                    "material": 2,
+                    "mode": 4
+                },
+                {
+                    "attributes": {
+                        "NORMAL": 2,
+                        "POSITION": 0,
+                        "TEXCOORD_0": 1
+                    },
+                    "indices": 6,
+                    "material": 3,
+                    "mode": 4
+                },
+                {
+                    "attributes": {
+                        "NORMAL": 2,
+                        "POSITION": 0,
+                        "TEXCOORD_0": 1
+                    },
+                    "indices": 7,
+                    "material": 4,
+                    "mode": 4
+                }
+            ]
+        }
+    ],
+    "nodes": [
+        {
+            "matrix": [
+                0.00010000000474974513,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.00010000002657761797,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.00010000000474974513,
+                0.0,
+                -0.1297999918460846,
+                -0.00010028427641373128,
+                0.0059055145829916,
+                0.9999999403953552
+            ],
+            "mesh": 0,
+            "name": "Felipe Rodrigues_logo"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "name": "Scene",
+            "nodes": [
+                0
+            ]
+        }
+    ],
+    "textures": [
+        {
+            "source": 0
+        },
+        {
+            "source": 1
+        }
+    ]
+}
