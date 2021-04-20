@@ -48,7 +48,7 @@ window.addEventListener('pointerdown', onMouseClick);
 function init() {
   scene = new Physijs.Scene();
   scene.setGravity(new THREE.Vector3(0, -50, 0));
-  scene.background = new THREE.Color(0xe1e1e1);
+  scene.background = new THREE.Color(0xffffff);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -57,7 +57,10 @@ function init() {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   document.body.appendChild(renderer.domElement);
-  createUIText('lab02');
+  createUIText('w o r k', 20, 30, -10, 2);
+  createUIText('c o n t a c t', 32, 30, -10, 2);
+  createUIText('I love making \napplications fun to \nuse', -50, 0, -10, 1);
+
   //createAxesHelper();
 }
 
@@ -68,7 +71,7 @@ function setupCameraAndLight() {
     1,
     1000
   );
-  camera.position.set(0, 10, 180);
+  camera.position.set(0, 0, 280);
   camera.add(audioListener);
 
   spotLight = new THREE.SpotLight(0xeeeeeeee, 2.5);
@@ -78,12 +81,11 @@ function setupCameraAndLight() {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   hemisphereLight = new THREE.HemisphereLight(0xffeeff, 0x39ffff, 0.2);
-  hemisphereLight.position.set(0, 10, 0);
+  hemisphereLight.position.set(5, 10, 1);
 
   scene.add(spotLight, hemisphereLight);
 
   //createShadowHelpers();
-
   orbitControl = new THREE.OrbitControls(camera, renderer.domElement);
 }
 
@@ -91,7 +93,7 @@ function createGeometry() {
   // plane = createMesh('plane', 'standard', 0xf1f1f1, true, true, 20);
   add3DLogo();
   let plane_mat = Physijs.createMaterial(
-    new THREE.MeshLambertMaterial(0xffd000),
+    new THREE.MeshLambertMaterial(0x1e1e1e),
     0.9, //friction
     0.01 //restituiton
   );
@@ -103,8 +105,8 @@ function createGeometry() {
   );
 
   plane.name = 'plane';
-
-  scene.add(plane);
+  plane.rotation.x = -0.5 * Math.PI;
+  //scene.add(plane);
 
   plane.addEventListener('collision', function (other_obj, rel_vel, rel_rot) {
     if (rel_vel.y > maxVelocity) {
@@ -141,7 +143,7 @@ function add3DLogo() {
         if (child.isLight) {
           let l = child;
           // l.castShadow = true;
-          //  // l.shadow.bias = -0.003;
+          // l.shadow.bias = -0.003;
           l.shadow.mapSize.width = 2048;
           l.shadow.mapSize.height = 2048;
         }
@@ -150,7 +152,7 @@ function add3DLogo() {
       const model = data.scene;
       // model.scale(100, 100, 100);
       console.log(model);
-      model.position.set(0, 10, 20);
+      model.position.set(-50, 22, 20);
       scene.add(model);
     },
 
@@ -203,6 +205,7 @@ function playGame() {
   createPyramid(selectedLevel, 2);
   isPlaying = true;
 }
+
 function clearScene() {
   let group = []; // = new THREE.Group();
   for (let i = 0; i < scene.children.length; i++) {
@@ -216,6 +219,7 @@ function clearScene() {
     scene.remove(e);
   });
 }
+
 function clearUIText() {
   let group = []; // = new THREE.Group();
   for (let i = 0; i < scene.children.length; i++) {
@@ -261,42 +265,10 @@ function loadLevels(url) {
   }
 }
 
-function parseJson(obj) {
-  heavyBoxMesh = [
-    obj.boxes.heavyBoxMesh.geometryType,
-    obj.boxes.heavyBoxMesh.materialType,
-    parseInt(obj.boxes.heavyBoxMesh.color),
-    obj.boxes.heavyBoxMesh.willCastShadow,
-    obj.boxes.heavyBoxMesh.willReceiveShadow,
-    obj.boxes.heavyBoxMesh.size,
-    obj.boxes.heavyBoxMesh.mass,
-    obj.boxes.heavyBoxMesh.friction,
-    obj.boxes.heavyBoxMesh.bouciness,
-  ];
-  lightBoxMesh = [
-    obj.boxes.lightBoxMesh.geometryType,
-    obj.boxes.lightBoxMesh.materialType,
-    parseInt(obj.boxes.lightBoxMesh.color),
-    obj.boxes.lightBoxMesh.willCastShadow,
-    obj.boxes.lightBoxMesh.willReceiveShadow,
-    obj.boxes.lightBoxMesh.size,
-    obj.boxes.lightBoxMesh.mass,
-    obj.boxes.lightBoxMesh.friction,
-    obj.boxes.lightBoxMesh.bouciness,
-  ];
-
-  lightBox = [...lightBoxMesh];
-  heavyBox = [...heavyBoxMesh];
-
-  levelOne = obj.levels.levelOne.piramidHeight;
-  levelTwo = obj.levels.levelTwo.piramidHeight;
-  levelThree = obj.levels.levelThree.piramidHeight;
-}
-
 function onMouseMove(event) {
   // calculate mouse position in normalized device coordinates
   // (-1 to +1) for both components
-  event.preventDefault();
+  //event.preventDefault();
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -308,24 +280,20 @@ function onMouseMove(event) {
   if (intersects.length > 0) {
     if (INTERSECTED != intersects[0].object) {
       if (INTERSECTED) {
-        if (
-          (INTERSECTED && INTERSECTED.name.slice(-3) == 'Box') ||
-          INTERSECTED.name == 'text'
-        )
+        if (INTERSECTED.mesh.name != 'text') {
           INTERSECTED.material.__proto__.color.setHex(INTERSECTED.currentHex);
-      }
-      INTERSECTED = intersects[0].object;
-      INTERSECTED.currentHex = INTERSECTED.material.__proto__.color.getHex();
-      INTERSECTED.material.__proto__.color.setHex(0xd3d3ffff);
-    } else {
-      if (
-        (INTERSECTED && INTERSECTED.name.slice(-3) == 'Box') ||
-        INTERSECTED.name === 'text'
-      ) {
-        INTERSECTED.material.__proto__.color.setHex(INTERSECTED.currentHex);
-      }
 
-      INTERSECTED = null;
+          INTERSECTED = intersects[0].object;
+          INTERSECTED.currentHex = INTERSECTED.material.__proto__.color.getHex();
+          INTERSECTED.material.__proto__.color.setHex(0xd3d3ffff);
+        } else {
+          if (INTERSECTED) {
+            INTERSECTED.material.__proto__.color.setHex(INTERSECTED.currentHex);
+          }
+
+          INTERSECTED = null;
+        }
+      }
     }
   }
 }
@@ -445,53 +413,51 @@ async function playSound(sound) {
   }
 }
 
-function createUIText(text) {
-  let _text = 'loaded!';
-  let _color = 0x0ffff;
-  let _posX = -20;
-  clearUIText();
-  switch (text) {
-    case 'instruction':
-      _text = 'click on the instructions to remove it';
-      _color = 0xd4af37;
-      _posX = -20;
-      break;
-    case 'lab02':
-      _text = 'Felipe Rodrigues Lab 2';
-      _color = 0xd4af37;
-      _posX = 20;
-      break;
+function createUIText(
+  text,
+  posX = 0,
+  posY = 0,
+  posZ = -10,
+  visualHirearchy = 2
+) {
+  let _color, _size;
+  switch (visualHirearchy) {
+    case 1:
+      _size = 3;
+      _color = 0x605a5a;
 
-    case 'instruction2':
-      _text = 'Bring the Golden box down without braking it. I doubt it!';
-      _color = 0xd4af37;
-      _posX = 20;
       break;
-
-    case 'win':
-      _text = 'YOU GOT IT!!';
+    case 2:
+      _size = 1.5;
+      _color = 0x6d6e71;
+      break;
+    case 3:
+      _size = 1.5;
+      _color = 0xd4af37;
+      break;
+    case 4:
+      _size = 1.5;
       _color = 0xffaa0f;
-      _posX = 0;
       break;
-    case 'loose':
-      _text = 'I knew it! Looser!';
+    case 5:
+      _size = 1.5;
       _color = 0xfff000;
-      _posX = 0;
       break;
   }
+
   textLoader.load(
-    '../node_modules/three/examples/fonts/helvetiker_regular.typeface.json',
+    '../node_modules/three/examples/fonts/Poppins_Light_Regular.json',
     (e) => {
-      let textUI = _text,
+      let textUI = text,
         height = 0.1,
-        size = 1,
+        size = _size,
         curveSegments = 4,
-        bevelThickness = 0.02,
-        bevelSize = 0.5,
+        bevelThickness = 0.1,
+        bevelSize = 0.02,
         bevelSegments = 3,
-        bevelEnabled = false,
-        font = e, // helvetiker, optimer, gentilis, droid sans, droid serif
-        weight = 'nomal', // normal bold
+        bevelEnabled = true,
+        font = e,
+        weight = 2, // normal bold
         style = 'normal'; // normal italic
 
       var textGeo = new THREE.TextGeometry(textUI, {
@@ -512,17 +478,13 @@ function createUIText(text) {
 
       let materialText = Physijs.createMaterial(
         new THREE.MeshBasicMaterial({ color: _color }),
-        0.1, //friction
-        1 //restituiton
+        0.2, //friction
+        10 //restituiton
       );
 
-      let mesh = new Physijs.BoxMesh(
-        textGeo,
-        materialText,
-        0 //mass
-      );
+      let mesh = new Physijs.BoxMesh(textGeo, materialText, textMass);
 
-      mesh.position.set(-20, 10, 15);
+      mesh.position.set(posX, posY, posZ);
       mesh.name = 'text';
       scene.add(mesh);
     }
