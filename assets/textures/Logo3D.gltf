@@ -5,6 +5,7 @@
         "version" : "2.0"
     },
     "extensionsUsed" : [
+        "KHR_materials_clearcoat",
         "KHR_texture_transform"
     ],
     "extensionsRequired" : [
@@ -26,8 +27,8 @@
             "mesh" : 0,
             "name" : "Felipe Rodrigues_logo",
             "scale" : [
-                7.2266457209479995e-06,
-                7.226659818115877e-06,
+                1.1190753866685554e-05,
+                1.11907775135478e-05,
                 8.373403943551239e-06
             ],
             "translation" : [
@@ -78,6 +79,12 @@
     "materials" : [
         {
             "doubleSided" : true,
+            "extensions" : {
+                "KHR_materials_clearcoat" : {
+                    "clearcoatFactor" : 0.1925925761461258,
+                    "clearcoatRoughnessFactor" : 0.29629629850387573
+                }
+            },
             "name" : "Felipe Rodrigues_logo Front Inflation Material",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
@@ -101,8 +108,8 @@
                     },
                     "index" : 0
                 },
-                "metallicFactor" : 0.07999999821186066,
-                "roughnessFactor" : 0.3333333432674408
+                "metallicFactor" : 0.24444442987442017,
+                "roughnessFactor" : 0.45185184478759766
             }
         },
         {

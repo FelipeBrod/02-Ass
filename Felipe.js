@@ -7,24 +7,23 @@ let pyramidHeight, levelOne, levelTwo, levelThree;
 let selectedLevel, restartGui, playGui;
 let textMass = 0;
 
-let jsonLoaded,
-  startGame,
-  isPlaying = false;
+let regularFontPath =
+  '../node_modules/three/examples/fonts/Poppins_Light_Regular.json';
 
-let spotLight, hemisphereLight;
+let boldFontPath = '../node_modules/three/examples/fonts/Poppins_Bold.json';
+let lightFontPath =
+  '../node_modules/three/examples/fonts/Poppins_ExtraLight_Regular.json';
+
+let spotLight, hemisphereLight, logoSpotLight;
 let directionalShadowHelper;
-let pyramidBase;
 const distanceBetweenBoxes = 0.25; // 1/4 of the box size
-let boxXInitialPos, boxXPostion;
 
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
-let groupBox = new THREE.Group();
 let INTERSECTED;
 const objects = [];
-let groundBase = false;
-let goldenBox = false;
-let maxVelocity = 10;
+const lightGroup = new THREE.Group();
+let logo = new THREE.Object3D();
 
 var textLoader = new THREE.FontLoader();
 let lightBoxMesh, heavyBoxMesh;
@@ -57,9 +56,22 @@ function init() {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   document.body.appendChild(renderer.domElement);
-  createUIText('w o r k', 20, 30, -10, 2);
-  createUIText('c o n t a c t', 32, 30, -10, 2);
-  createUIText('I love making \napplications fun to \nuse', -50, 0, -10, 1);
+
+  const logo = add3DGLTF('Logo3D.gltf', -55, 21, -10);
+  createUIText('F E L I P E \nR O D R I G U E S', -44, 26, -10, 3);
+  createUIText('W O R K', 20, 30, -10, 2);
+  createUIText('C O N T A C T', 32, 30, -10, 2);
+
+  const heroText = 'I love making \napplications \nfun \nto \n\nuse';
+  const heroArray = heroText.split(' ');
+  console.log(heroArray);
+
+  let posX = [0, 3, 14, 0, 29, 38, 0];
+  for (let index = 0; index < heroArray.length; index++) {
+    createUIText(` ${heroArray[index]}`, -50 + posX[index], 0, -10, 1);
+  }
+
+  //createUIText(heroText, -50, 0, -10, 1);
 
   //createAxesHelper();
 }
@@ -74,39 +86,55 @@ function setupCameraAndLight() {
   camera.position.set(0, 0, 280);
   camera.add(audioListener);
 
-  spotLight = new THREE.SpotLight(0xeeeeeeee, 2.5);
-  spotLight.castShadow = true;
-  spotLight.position.set(0, 65, 60);
+  const ambientLight = new THREE.AmbientLight(0xeeeeee, 0.8);
+
+  spotLight = new THREE.SpotLight(0xeeeeee, 0.8);
+  //spotLight.castShadow = true;
+  spotLight.lookAt(-52, 25, -10);
+  //spotLight.target.position.set(-52, 25, -10);
+  spotLight.position.set(-30, 30, 100);
+
+  logoSpotLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  logoSpotLight.castShadow = true;
+  logoSpotLight.position.set(-80, 32, 30);
+  logoSpotLight.target.position.set(-52, 25, -10);
+  scene.add(logoSpotLight.target);
+
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-  hemisphereLight = new THREE.HemisphereLight(0xffeeff, 0x39ffff, 0.2);
-  hemisphereLight.position.set(5, 10, 1);
+  //hemisphereLight = new THREE.HemisphereLight(0xffeeff, 0x39ffff, 100);
+  //hemisphereLight.position.set(0, 0, 0);
 
-  scene.add(spotLight, hemisphereLight);
+  lightGroup.add(spotLight);
 
-  //createShadowHelpers();
+  scene.add(lightGroup);
+
+  createShadowHelpers();
   orbitControl = new THREE.OrbitControls(camera, renderer.domElement);
 }
 
 function createGeometry() {
-  // plane = createMesh('plane', 'standard', 0xf1f1f1, true, true, 20);
-  add3DLogo();
-  let plane_mat = Physijs.createMaterial(
-    new THREE.MeshLambertMaterial(0x1e1e1e),
-    0.9, //friction
-    0.01 //restituiton
-  );
+  plane = createMesh('plane', 'standard', 0x6d6e71, true, true, 1000);
+  //logo
 
-  let plane = new Physijs.BoxMesh(
-    new THREE.BoxBufferGeometry(60, 100, 1),
-    plane_mat,
-    0 //mass
-  );
+  // let plane_mat = Physijs.createMaterial(
+  //   new THREE.MeshLambertMaterial(0xf00000),
+  //   0.9, //friction
+  //   0.01 //restituiton
+  // );
+
+  // let plane = new Physijs.BoxMesh(
+  //   new THREE.BoxBufferGeometry(60, 100, 1),
+  //   plane_mat,
+  //   0 //mass
+  // );
 
   plane.name = 'plane';
-  plane.rotation.x = -0.5 * Math.PI;
-  //scene.add(plane);
+  plane.position.set(0, 0, -10.2);
+
+  // //plane.rotation.x = -0.5 * Math.PI;
+  scene.add(plane);
 
   plane.addEventListener('collision', function (other_obj, rel_vel, rel_rot) {
     if (rel_vel.y > maxVelocity) {
@@ -130,9 +158,9 @@ function createGeometry() {
   });
 }
 
-function add3DLogo() {
+function add3DGLTF(itemName, posX = 0, posY = 0, posZ = 0) {
   loader.load(
-    'Logo3D.gltf',
+    itemName,
     function (data) {
       data.scene.traverse(function (child) {
         if (child.isMesh) {
@@ -142,8 +170,8 @@ function add3DLogo() {
         }
         if (child.isLight) {
           let l = child;
-          // l.castShadow = true;
-          // l.shadow.bias = -0.003;
+          l.castShadow = true;
+          l.shadow.bias = -0.01;
           l.shadow.mapSize.width = 2048;
           l.shadow.mapSize.height = 2048;
         }
@@ -152,12 +180,12 @@ function add3DLogo() {
       const model = data.scene;
       // model.scale(100, 100, 100);
       console.log(model);
-      model.position.set(-50, 22, 20);
+      model.position.set(posX, posY, posZ);
       scene.add(model);
     },
 
     (xhr) => {
-      console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+      // console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
     },
     (error) => {
       console.log(error);
@@ -234,37 +262,6 @@ function clearUIText() {
   });
 }
 
-function loadLevels(url) {
-  let request = new XMLHttpRequest(); //creates a XMLHttpRequest object
-  request.open('GET', 'felipe.json'); //set the command and the url
-  request.responseType = 'json'; //sets the response format
-  request.send(); //send the command to the service
-  request.onload = () => {
-    //what to do when load is completed
-    levels = request.response;
-    parseJson(levels);
-  };
-  createUIText('instructions');
-
-  if (levelOne) {
-    if (jsonLoaded) return;
-    gui
-      .add(controls, 'levels', {
-        easy: levelOne,
-        moderate: levelTwo,
-        hard: levelThree,
-      })
-      .onChange((e) => {
-        selectedLevel = e;
-        startGame = true;
-        if (isPlaying) return;
-        playGui = gui.add(controls, 'play');
-      });
-    //console.log(selectedLevel);
-    jsonLoaded = true;
-  }
-}
-
 function onMouseMove(event) {
   // calculate mouse position in normalized device coordinates
   // (-1 to +1) for both components
@@ -299,12 +296,8 @@ function onMouseMove(event) {
 }
 
 function onMouseClick(event) {
-  if (
-    (INTERSECTED && INTERSECTED.name.slice(-3) === 'Box') ||
-    INTERSECTED.name === 'text'
-  ) {
+  if (INTERSECTED) {
     var selectedObject = scene.getObjectById(INTERSECTED.id);
-    console.log(selectedObject);
     scene.remove(selectedObject);
   }
 }
@@ -420,75 +413,81 @@ function createUIText(
   posZ = -10,
   visualHirearchy = 2
 ) {
-  let _color, _size;
+  let _color, _size, _font, _bevelSize;
   switch (visualHirearchy) {
     case 1:
+      _font = boldFontPath;
       _size = 3;
-      _color = 0x605a5a;
-
+      _color = 0x6d6e71;
       break;
     case 2:
+      _font = regularFontPath;
       _size = 1.5;
       _color = 0x6d6e71;
       break;
     case 3:
-      _size = 1.5;
-      _color = 0xd4af37;
+      _font = lightFontPath;
+      _size = 1.0;
+      _color = 0x6d6e71;
       break;
     case 4:
+      _font = regularFontPath;
       _size = 1.5;
       _color = 0xffaa0f;
       break;
     case 5:
+      _font = regularFontPath;
       _size = 1.5;
       _color = 0xfff000;
       break;
   }
 
-  textLoader.load(
-    '../node_modules/three/examples/fonts/Poppins_Light_Regular.json',
-    (e) => {
-      let textUI = text,
-        height = 0.1,
-        size = _size,
-        curveSegments = 4,
-        bevelThickness = 0.1,
-        bevelSize = 0.02,
-        bevelSegments = 3,
-        bevelEnabled = true,
-        font = e,
-        weight = 2, // normal bold
-        style = 'normal'; // normal italic
+  textLoader.load(_font, (e) => {
+    let textUI = text,
+      height = 0.1,
+      size = _size,
+      curveSegments = 4,
+      bevelThickness = 0.3,
+      bevelSize = 0.01,
+      bevelSegments = 3,
+      bevelEnabled = true,
+      font = e,
+      weight = 'normal ', // normal bold
+      style = 'normal'; // normal italic
 
-      var textGeo = new THREE.TextGeometry(textUI, {
-        size: size,
-        height: height,
-        curveSegments: curveSegments,
+    var textGeo = new THREE.TextGeometry(textUI, {
+      size: size,
+      height: height,
+      curveSegments: curveSegments,
 
-        font: font,
-        weight: weight,
-        style: style,
+      font: font,
+      weight: weight,
+      style: style,
 
-        bevelThickness: bevelThickness,
-        bevelSize: bevelSize,
-        bevelEnabled: bevelEnabled,
-      });
-      //var material = new THREE.MeshBasicMaterial({ color: 0x11ff00 });
-      // var textGeo = new THREE.Mesh(textGeo, material);
+      bevelThickness: bevelThickness,
+      bevelSize: bevelSize,
+      bevelEnabled: bevelEnabled,
+    });
+    //var material = new THREE.MeshBasicMaterial({ color: 0x11ff00 });
+    // var textGeo = new THREE.Mesh(textGeo, material);
 
-      let materialText = Physijs.createMaterial(
-        new THREE.MeshBasicMaterial({ color: _color }),
-        0.2, //friction
-        10 //restituiton
-      );
+    let materialText = Physijs.createMaterial(
+      new THREE.MeshStandardMaterial({
+        color: _color,
+        emissive: 0xbcbec0,
+        emissiveIntensity: 0.4,
+      }),
+      0.2, //friction
+      10 //restituiton
+    );
 
-      let mesh = new Physijs.BoxMesh(textGeo, materialText, textMass);
+    let mesh = new Physijs.BoxMesh(textGeo, materialText, textMass);
 
-      mesh.position.set(posX, posY, posZ);
-      mesh.name = 'text';
-      scene.add(mesh);
-    }
-  );
+    mesh.position.set(posX, posY, posZ);
+    mesh.castShadow = true;
+    mesh.name = 'text';
+    scene.add(mesh);
+  });
 }
 
 function createAxesHelper() {
@@ -499,9 +498,13 @@ function createAxesHelper() {
 
 function createShadowHelpers() {
   //shadow Helpers;
-  directionalShadowHelper = new THREE.CameraHelper(spotLight.shadow.camera);
-  directionalShadowHelper.visible = true;
-  directionalShadowHelper.scale.set(80, 80, 80);
 
-  scene.add(directionalShadowHelper);
+  lightGroup.children.forEach((e) => {
+    if (e.shadow) {
+      directionalShadowHelper = new THREE.CameraHelper(e.shadow.camera);
+      directionalShadowHelper.visible = true;
+      directionalShadowHelper.scale.set(80, 80, 80);
+    }
+    scene.add(directionalShadowHelper);
+  });
 }
