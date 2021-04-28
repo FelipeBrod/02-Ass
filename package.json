@@ -1,7 +1,7 @@
 {
   "name": "02-ass",
   "version": "1.0.0",
-  "description": "Tower Glass with physics",
+  "description": "Felipe Rodrigues Portifolio",
   "main": "02-Felipe.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,6 +9,7 @@
   "author": "Felipe Rodrigues",
   "license": "ISC",
   "dependencies": {
+    "perlin-noise": "^0.0.1",
     "three": "^0.127.0"
   }
 }
