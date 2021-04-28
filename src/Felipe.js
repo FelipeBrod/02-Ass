@@ -77,7 +77,6 @@ function init() {
   scene = new Physijs.Scene();
   scene.setGravity(new THREE.Vector3(0, 0, -100));
   scene.background = new THREE.Color(0x000000);
-  scene.fog = new THREE.Fog(0xc4c4c4, 10, 1000);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -91,7 +90,7 @@ function init() {
   createAxesHelper();
 }
 
-function setupCameraAndLight() {
+function setupCamera() {
   camera = new THREE.PerspectiveCamera(
     50,
     window.innerWidth / window.innerHeight,
@@ -101,7 +100,10 @@ function setupCameraAndLight() {
   camera.position.set(0, 0, 100);
   camera.layers.enable(1);
   camera.add(audioListener);
+  orbitControl = new THREE.OrbitControls(camera, renderer.domElement);
+}
 
+function setupLight() {
   const ambientLight = new THREE.AmbientLight(0xeeeeee, 1.2);
   scene.add(ambientLight);
 
@@ -119,7 +121,6 @@ function setupCameraAndLight() {
   light.position.setScalar(100);
   scene.add(light);
 
-  orbitControl = new THREE.OrbitControls(camera, renderer.domElement);
   createShadowHelpers();
 }
 
@@ -552,7 +553,8 @@ function render() {
 
 window.onload = () => {
   init();
-  setupCameraAndLight();
+  setupCamera();
+  setupLight();
   createGeometry();
   render();
 };
