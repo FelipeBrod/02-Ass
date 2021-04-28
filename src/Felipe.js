@@ -10,23 +10,22 @@ void main() {
   gl_FragColor = vec4(0.6, 0.6, 0.585, 0.4);
 }`;
 
-let params = {
-  bloomStrength: 0.5,
-  bloomThreshold: 0.6,
-  bloomRadius: 1.6,
-};
-
 //Bloom
 var renderTarget1 = new THREE.WebGLRenderTarget(); // <- Opaque objects
 var renderTarget2 = new THREE.WebGLRenderTarget(); // <- Glowing objects
 let composer;
 let renderScene, effectFXAA;
 let logo;
+let params = {
+  bloomStrength: 0.5,
+  bloomThreshold: 0.6,
+  bloomRadius: 1.6,
+};
 
 //Car
 let movingBack = false;
 let rr, rl, fl, fr;
-let car = {};
+let car;
 let wheel_material, wheel_geometry, big_wheel_geometry;
 let damping = 0.7;
 let friction = 0.9; //high
@@ -43,6 +42,21 @@ let textMass = 50;
 let spotLight, hemisphereLight, logoSpotLight;
 let directionalShadowHelper;
 const lightGroup = new THREE.Group();
+
+//camera
+let goal = new THREE.Object3D();
+var follow = new THREE.Object3D();
+var newPosition = new THREE.Vector3();
+var time = 0;
+var matrix = new THREE.Matrix4();
+var stop = 1;
+var DEGTORAD = 0.01745327;
+var temp = new THREE.Vector3();
+var dir = new THREE.Vector3();
+let dis;
+var a = new THREE.Vector3();
+var b = new THREE.Vector3();
+var cameraDistance = 0.3;
 
 //Assets
 const textLoader = new THREE.FontLoader();
@@ -87,20 +101,23 @@ function init() {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-  createAxesHelper();
+  //createAxesHelper();
 }
 
 function setupCamera() {
   camera = new THREE.PerspectiveCamera(
-    50,
+    45,
     window.innerWidth / window.innerHeight,
     1,
     10000
   );
-  camera.position.set(0, 0, 100);
-  camera.layers.enable(1);
+  camera.position.set(0, -50, 100);
+  camera.lookAt(scene.position);
+  //camera.layers.enable(1);
+  follow.position.z = -cameraDistance;
+
   camera.add(audioListener);
-  orbitControl = new THREE.OrbitControls(camera, renderer.domElement);
+  //orbitControl = new THREE.OrbitControls(camera, renderer.domElement);
 }
 
 function setupLight() {
@@ -248,8 +265,12 @@ function createCar() {
   let geom = new THREE.BoxGeometry(2, 24, 2);
   car = new Physijs.BoxMesh(geom, car_material, 500);
   car.castShadow = true;
+
   car.position.set(0, 0, 5);
   scene.add(car);
+
+  car.add(follow);
+  goal.add(camera);
 
   // let axisA = createCarAxis(0, 10, 5, 5);
   // let axisB = createCarAxis(0, -10, 5, 5);
@@ -258,8 +279,8 @@ function createCar() {
 
   fr = createWheel(5, 10, 5);
   fl = createWheel(-5, 10, 5);
-  let fr2 = createWheel(5, 4, 5);
-  let fl2 = createWheel(-5, 4, 5);
+  // let fr2 = createWheel(5, 4, 5);
+  // let fl2 = createWheel(-5, 4, 5);
   rr = createWheel(5, -10, 5);
   rl = createWheel(-5, -10, 5);
 
@@ -288,7 +309,6 @@ function createCar() {
   //FRONT WHEELS
   frConstraint.setAngularLowerLimit({ x: 0, y: 0, z: 0 });
   frConstraint.setAngularUpperLimit({ x: 0, y: 0, z: 0 });
-
   flConstraint.setAngularLowerLimit({ x: 0, y: 0, z: 0 });
   flConstraint.setAngularUpperLimit({ x: 0, y: 0, z: 0 });
 
@@ -317,7 +337,7 @@ function createCar() {
 function createWheel(posX, posY, posZ) {
   let wheel_material = Physijs.createMaterial(
     new THREE.MeshBasicMaterial({
-      color: 'grey',
+      color: 'whitedd',
       wireframe: true,
     }),
     0.8, // high friction
@@ -352,11 +372,9 @@ function createCarAxis(posX = 0, posY = 0, posZ = 0, size = 10) {
   return axis;
 }
 
-function getCarPos() {
-  console.log(car);
-}
-
 function handleKeyDown(keyEvent) {
+  // console.log(car.position);
+
   switch (keyEvent.keyCode) {
     case 38:
     case 87:
@@ -375,6 +393,7 @@ function handleKeyDown(keyEvent) {
 
       break;
     case 37:
+      ss;
     case 65:
       // Left
       configureMotorsToTurn(8, -10);
@@ -391,7 +410,6 @@ function handleKeyDown(keyEvent) {
       configureAllAngularMotor(0, false);
 
     default:
-      console.log('not a car control');
   }
 }
 
@@ -450,6 +468,7 @@ function handleKeyUp(keyEvent) {
     default:
   }
 }
+
 function add3DGLTF(itemName, posX = 0, posY = 0, posZ = 0) {
   loader.load(
     itemName,
@@ -529,26 +548,42 @@ function onMouseMove(event) {
 }
 
 function onMouseClick(event) {
+  console.log(`camera:  ${camera.rotation.z}`);
+  console.log(`car:  ${car.rotation.z}`);
   if (INTERSECTED) {
     let selectedObject = scene.getObjectById(INTERSECTED.id);
     scene.remove(selectedObject);
   }
 }
 
+function animate() {
+  a.lerp(car.position, 0.4);
+  b.copy(goal.position);
+
+  dir.copy(a).sub(b).normalize();
+  dis = a.distanceTo(b);
+  goal.position.addScaledVector(dir, dis);
+  goal.position.lerp(temp, 0.2);
+  temp.setFromMatrixPosition(follow.matrixWorld);
+  camera.lookAt(car.position);
+}
+
 function render() {
   requestAnimationFrame(render);
-  scene.simulate(undefined, 4);
-  orbitControl.update();
+  scene.simulate(undefined, 1);
 
-  renderer.autoClear = false;
-  renderer.clear();
+  // orbitControl.update();
+  // _thirdPersonCamera.Update();
 
-  renderer.clearDepth();
-  camera.layers.set(1);
+  //renderer.autoClear = false;
+  //renderer.clear();
+
+  //renderer.clearDepth();
+  //camera.layers.set(1);
+  animate();
   renderer.render(scene, camera);
-
-  camera.layers.set(0);
-  composer.render();
+  //camera.layers.set(0);
+  //composer.render();
 }
 
 window.onload = () => {
