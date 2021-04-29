@@ -30,6 +30,8 @@ let params = {
 };
 
 //Car
+//const carSpotLight;
+let truck = new Physijs.Mesh();
 let movingBack = false;
 let rr, rl, fl, fr;
 let car;
@@ -118,14 +120,14 @@ function setupCamera() {
   camera.position.set(0, 0, 100);
   camera.lookAt(scene.position);
   camera.layers.enable(1);
-  // follow.position.z = -cameraDistance;
+  follow.position.z = -cameraDistance;
 
   camera.add(audioListener);
-  //orbitControl = new THREE.OrbitControls(camera, renderer.domElement);
+  // orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
 }
 
 function setupLight() {
-  const ambientLight = new THREE.AmbientLight(0xeeeeee, 1.2);
+  const ambientLight = new THREE.AmbientLight(0xeeeeee, 2.2);
   scene.add(ambientLight);
 
   logoSpotLight = new THREE.DirectionalLight(0xffffff, 0.5);
@@ -134,6 +136,8 @@ function setupLight() {
   logoSpotLight.target.position.set(-52, 25, -10);
   scene.add(logoSpotLight.target);
   scene.add(logoSpotLight);
+
+  const carSpotLight = new THREE.DirectionalLight(0xeeeeee, 0.2);
 
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -147,7 +151,7 @@ function setupLight() {
 
 function createGeometry() {
   //const heroText = 'I love making \napplications \nfun \nto \n\nuse';
-  const heroArray = ['I love making', '\napplications fun to', '\n\nuse'];
+  const heroArray = ['I make applications', '\nfun to use'];
   // let wordsPosX = [0, 3, 14, 0, 29, 38, 0];
   for (let index = 0; index < heroArray.length; index++) {
     createUIText(` ${heroArray[index]}`, -50, 0, 9, 1);
@@ -174,7 +178,8 @@ function createGeometry() {
   moon.layers.enable(1);
   scene.add(moon);
 
-  logo = add3DGLTF('Logo3D.gltf', -55, 21, 0);
+  logo = add3DGLTF('Logo3D.gltf', -55, 21, 0, 1, 0);
+
   //console.log(logo);
   const sunGeo = new THREE.SphereBufferGeometry(2000, 128, 128);
   //const sunGeo = new THREE.SphereGeometry(1000, 32, 32);
@@ -264,22 +269,38 @@ function createBloom() {
 
 function createCar() {
   //camera.position.set(0, -200, 80);
-  var car_material = Physijs.createMaterial(
+  add3DGLTF('CyberTruck.gltf', 0, 0, 0, 6, 2, 0);
+  let carMaterial = Physijs.createMaterial(
     new THREE.MeshLambertMaterial({
-      color: 0xff4444,
-      opacity: 0.9,
+      color: 0x444444,
+      opacity: 0.0,
       transparent: true,
     }),
     0.5,
     0.5
   );
-  let geom = new THREE.BoxGeometry(2, 24, 2);
-  car = new Physijs.BoxMesh(geom, car_material, 500);
+  let carGeo = new THREE.BoxGeometry(10, 12, 8);
+
+  let axisMaterial = Physijs.createMaterial(
+    new THREE.MeshLambertMaterial({
+      color: 0x444444,
+      opacity: 0.2,
+      transparent: true,
+    }),
+    0.5,
+    0.5
+  );
+  let axisGeo = new THREE.BoxGeometry(12, 35, 3);
+  let axis = new Physijs.BoxMesh(axisGeo, axisMaterial, 100);
+
+  car = new Physijs.BoxMesh(carGeo, carMaterial, 500);
   car.castShadow = true;
 
-  car.position.set(0, 0, 5);
+  car.position.set(0, 0, 10);
+
   scene.add(car);
 
+  car.add(axis);
   car.add(follow);
   goal.add(camera);
 
@@ -291,12 +312,12 @@ function createCar() {
   // scene.add(axisA);
   // scene.add(axisB);
 
-  fr = createWheel(5, 10, 5);
-  fl = createWheel(-5, 10, 5);
+  fr = createWheel(7, 12, 5);
+  fl = createWheel(-7, 12, 5);
   // let fr2 = createWheel(5, 4, 5);
   // let fl2 = createWheel(-5, 4, 5);
-  rr = createWheel(5, -10, 5);
-  rl = createWheel(-5, -10, 5);
+  rr = createWheel(7, -10.5, 5);
+  rl = createWheel(-7, -10.5, 5);
 
   let wheelGroup = new THREE.Group();
   wheelGroup.add(fr, fl, rr, rl);
@@ -309,14 +330,14 @@ function createCar() {
   frConstraint = new Physijs.DOFConstraint(
     fr,
     car,
-    new THREE.Vector3(5, 10, 5)
+    new THREE.Vector3(5, 12, 5)
   );
   scene.addConstraint(frConstraint);
 
   flConstraint = new Physijs.DOFConstraint(
     fl,
     car,
-    new THREE.Vector3(-5, 10, 5)
+    new THREE.Vector3(-5, 12, 5)
   );
   scene.addConstraint(flConstraint);
 
@@ -329,23 +350,23 @@ function createCar() {
   rrConstraint = new Physijs.DOFConstraint(
     rr,
     car,
-    new THREE.Vector3(5, -10, 5)
+    new THREE.Vector3(5, -10.5, 5)
   );
   scene.addConstraint(rrConstraint);
 
   rlConstraint = new Physijs.DOFConstraint(
     rl,
     car,
-    new THREE.Vector3(-5, -10, 5)
+    new THREE.Vector3(-5, -10.5, 5)
   );
   scene.addConstraint(rlConstraint);
 
   //BACK WHEELS
   rrConstraint.setAngularUpperLimit({ x: 0, y: 0, z: 0 });
-  rrConstraint.setAngularLowerLimit({ x: 0, y: 0, z: 0 });
+  rrConstraint.setAngularLowerLimit({ x: 1, y: 0, z: 0 });
 
   rlConstraint.setAngularUpperLimit({ x: 0, y: 0, z: 0 });
-  rlConstraint.setAngularLowerLimit({ x: 0, y: 0, z: 0 });
+  rlConstraint.setAngularLowerLimit({ x: 1, y: 0, z: 0 });
 
   tweenCamera(targetPosition, duration);
 }
@@ -353,19 +374,21 @@ function createCar() {
 function createWheel(posX, posY, posZ) {
   let wheel_material = Physijs.createMaterial(
     new THREE.MeshBasicMaterial({
-      color: 'whited',
-      wireframe: true,
+      color: 'grey',
+      opacity: 0.2,
+      transparent: true,
     }),
-    0.8, // high friction
-    0.9 // medium restitution
+    0.5, // medium friction
+    0.9 // low restitution
   );
 
-  let wheel_geometry = new THREE.CylinderGeometry(2, 2, 4, 20);
+  let wheel_geometry = new THREE.CylinderGeometry(3, 3, 3, 6);
   let wheel = new Physijs.CylinderMesh(wheel_geometry, wheel_material, 200);
   wheel.rotation.z = Math.PI / 2;
 
   wheel.castShadow = true;
   wheel.position.set(posX, posY, posZ);
+  add3DGLTF('wheel.gltf', 1, 1, 8, 10, 1, 0, wheel);
 
   return wheel;
 }
@@ -424,7 +447,8 @@ function handleKeyDown(keyEvent) {
       enableMotors(); /*  */
       break;
     case 32:
-      configureAllAngularMotor(0, false);
+      rlConstraint.configureAngularMotor(0, 1, 2, 0, 1000);
+      rrConstraint.configureAngularMotor(0, 1, 2, 0, 1000);
 
     default:
   }
@@ -451,17 +475,17 @@ function configureAllAngularMotor(velocity, rotateOnAxis = true) {
     min = 1;
     max = 2;
   }
-  frConstraint.configureAngularMotor(0, min, max, velocity, 1000);
-  flConstraint.configureAngularMotor(0, min, max, velocity, 1000);
-  rlConstraint.configureAngularMotor(0, min, max, velocity, 1000);
-  rrConstraint.configureAngularMotor(0, min, max, velocity, 1000);
+  frConstraint.configureAngularMotor(0, min, max, velocity, 2000);
+  flConstraint.configureAngularMotor(0, min, max, velocity, 2000);
+  rlConstraint.configureAngularMotor(0, min, max, velocity, 2000);
+  rrConstraint.configureAngularMotor(0, min, max, velocity, 2000);
 }
 
 function configureMotorsToTurn(leftMotorsVelocity, rightMotorsVelocity) {
-  flConstraint.configureAngularMotor(0, 2, 1, leftMotorsVelocity, 1000);
-  frConstraint.configureAngularMotor(0, 2, 1, rightMotorsVelocity, 1000);
-  rlConstraint.configureAngularMotor(0, 2, 1, leftMotorsVelocity, 1000);
-  rrConstraint.configureAngularMotor(0, 2, 1, rightMotorsVelocity, 1000);
+  flConstraint.configureAngularMotor(0, 2, 1, leftMotorsVelocity, 2000);
+  frConstraint.configureAngularMotor(0, 2, 1, rightMotorsVelocity, 2000);
+  rlConstraint.configureAngularMotor(0, 2, 1, leftMotorsVelocity, 2000);
+  rrConstraint.configureAngularMotor(0, 2, 1, rightMotorsVelocity, 2000);
 }
 
 function handleKeyUp(keyEvent) {
@@ -489,42 +513,57 @@ function handleKeyUp(keyEvent) {
 }
 
 //FIX //BUG
-function add3DGLTF(itemName, posX = 0, posY = 0, posZ = 0) {
+function add3DGLTF(
+  itemName,
+  posX = 0,
+  posY = 0,
+  posZ = 0,
+  scale,
+  rotationOnXAxis = 0,
+  rotationOnZAxis = 0,
+  wheel = null
+) {
   loader.load(
     itemName,
     function (data) {
-      let mesh;
-      data.scene.traverse(function (glft) {
-        if (glft.isMesh) {
-          //  let meshGeo = new THREE.BuuGeometry(glft.geometry);
-          let meshMat = Physijs.createMaterial(glft.material, 0.8, 0.9);
-
-          mesh = new Physijs.Mesh(glft.geometry, meshMat, 100);
+      data.scene.traverse(function (child) {
+        if (child.isMesh) {
+          let m = child;
+          m.receiveShadow = true;
+          m.castShadow = true;
         }
-        if (glft.isLight) {
+        if (child.isLight) {
           let l = glft;
           l.castShadow = true;
           l.shadow.bias = -0.01;
-          l.shadow.mapSize.width = 2048;
-          l.shadow.mapSize.height = 2048;
+          l.shadow.mapSize.width = 1024;
+          l.shadow.mapSize.height = 1024;
         }
       });
 
-      console.log(mesh);
-      console.log(moon);
+      // console.log(mesh);
+      // console.log(moon);
       //const mesh =
 
-      //const model = data.scene;
-      //model.position.set(posX, posY, posZ);
-      //model.layers.enable(0);
-      // mesh.layers.enable(0);
-      mesh.position.set(posX, posY, posZ);
-
-      scene.add(mesh);
+      const model = data.scene;
+      model.position.set(posX, posY, posZ);
+      model.scale.set(scale, scale, scale);
+      model.layers.enable(0);
+      if (wheel) {
+        model.rotation.x = Math.PI / rotationOnZAxis;
+        wheel.add(model);
+        return;
+      }
+      if (car) {
+        model.rotation.x = Math.PI / rotationOnXAxis;
+        car.add(model);
+        return;
+      }
+      scene.add(model);
     },
 
     (xhr) => {
-      // console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+      console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
     },
     (error) => {
       console.log(error);
@@ -576,8 +615,9 @@ function onMouseMove(event) {
 }
 
 function onMouseClick(event) {
-  // console.log(`camera:  ${camera.rotation.z}`);
-  // console.log(`car:  ${car.rotation.z}`);
+  //console.log(truck);
+
+  //scene.add(truck);
   if (INTERSECTED) {
     let selectedObject = scene.getObjectById(INTERSECTED.id);
     scene.remove(selectedObject);
@@ -604,13 +644,13 @@ function tweenCamera(targetPosition, duration) {
 
 function animate() {
   if (car) {
-    a.lerp(car.position, 0.4);
+    a.lerp(car.position, 0.2);
     b.copy(goal.position);
 
     dir.copy(a).sub(b).normalize();
     dis = a.distanceTo(b);
     goal.position.addScaledVector(dir, dis);
-    goal.position.lerp(temp, 0.8);
+    goal.position.lerp(temp, 0.2);
     temp.setFromMatrixPosition(follow.matrixWorld);
     camera.lookAt(car.position);
   }
@@ -622,6 +662,7 @@ function animate() {
 function render() {
   requestAnimationFrame(render);
   scene.simulate(undefined, 1);
+  // orbitControls.update();
 
   renderer.autoClear = false;
   renderer.clear();
