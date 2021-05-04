@@ -330,7 +330,6 @@ public_functions.addObject = function( description ) {
 	localInertia, shape, motionState, rbInfo, body;
 
 shape = createShape( description );
-//shape.setActivationState(4);
 if (!shape) return
 // If there are children then this is a compound shape
 if ( description.children ) {
@@ -390,8 +389,6 @@ if ( description.children ) {
 
 	body = new Ammo.btRigidBody( rbInfo );
 	Ammo.destroy(rbInfo);
-	body.setActivationState(4)
-
 
 	if ( typeof description.collision_flags !== 'undefined' ) {
 		body.setCollisionFlags( description.collision_flags );

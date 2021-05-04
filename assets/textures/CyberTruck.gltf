@@ -348,14 +348,17 @@
       "name": "Steel",
       "pbrMetallicRoughness": {
         "baseColorFactor": [0.65, 0.65, 0.65, 1],
-        "metallicFactor": 0.8,
+        "metallicFactor": 0.7,
         "roughnessFactor": 0.2
       }
     },
     {
       "doubleSided": true,
       "name": "Glass",
-      "pbrMetallicRoughness": {}
+
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [0.0, 0.0, 0.0, 0.1]
+      }
     },
     {
       "doubleSided": true,
