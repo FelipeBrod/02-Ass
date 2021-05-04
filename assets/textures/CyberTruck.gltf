@@ -368,7 +368,11 @@
     {
       "doubleSided": true,
       "name": "Tailight Red",
-      "pbrMetallicRoughness": {}
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [1.0, 0.0, 0.0, 1.0],
+        "metallicFactor": 0.9,
+        "roughnessFactor": 0.5
+      }
     },
     {
       "doubleSided": true,
@@ -391,9 +395,9 @@
       },
       "name": "Light",
       "pbrMetallicRoughness": {
-        "baseColorFactor": [0.5, 0.5, 0.5, 1],
-        "metallicFactor": 0,
-        "roughnessFactor": 0.9
+        "baseColorFactor": [0.9, 0.9, 0.9, 1],
+        "metallicFactor": 0.9,
+        "roughnessFactor": 0.1
       }
     },
     {

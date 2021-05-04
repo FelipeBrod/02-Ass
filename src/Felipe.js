@@ -39,13 +39,13 @@ let frConstraint, flConstraint, rrConstraint, rlConstraint;
 //Scene
 let ground;
 let render_stats, physics_stats;
-let renderer, scene, camera, orbitControls;
+let renderer, scene, camera, orbitControl;
 let moon = new THREE.Object3D();
 let sceneThree;
 let controls, gui, levels;
 let axesHelper;
 let selectedLevel, restartGui, playGui;
-let textMass = 50;
+let textMass = 0;
 let spotLight, hemisphereLight, logoSpotLight;
 let directionalShadowHelper;
 const lightGroup = new THREE.Group();
@@ -60,6 +60,7 @@ var dir = new THREE.Vector3(0, -200, -800);
 let dis;
 var a = new THREE.Vector3();
 var b = new THREE.Vector3();
+var initalScene = new THREE.Vector3(0, 0, 0);
 var cameraDistance = 3;
 
 //Assets
@@ -118,17 +119,16 @@ function init() {
   document.getElementById('viewport').appendChild(render_stats.domElement);
 
   scene = new Physijs.Scene();
-  scene.setGravity(new THREE.Vector3(0, 0, -30));
-  //scene.background = new THREE.Color(0x000000);
+  scene.setGravity(new THREE.Vector3(0, 0, -80));
+  // scene.background = new THREE.Color(0xe1e1e1);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   // renderer.setClearColor(0x101000);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
   document.body.appendChild(renderer.domElement);
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
   renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const workButton = document.getElementById('startButton');
   workButton.addEventListener(
@@ -145,16 +145,12 @@ function setupCamera() {
     50,
     window.innerWidth / window.innerHeight,
     10,
-    10000
+    20000
   );
   camera.position.set(0, 0, 100);
-  camera.lookAt(scene.position);
+  camera.lookAt(scene);
+
   follow.position.z = -cameraDistance;
-  // orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
-  // orbitControls.enableDamping = true;
-  // orbitControls.dampingFactor = 0.25;
-  // orbitControls.dampingFactor = 0.25;
-  // orbitControls.enableZoom = true;
 }
 
 function setupLight() {
@@ -164,7 +160,6 @@ function setupLight() {
   logoSpotLight = new THREE.DirectionalLight(0xffffff, 0.5);
   logoSpotLight.castShadow = true;
   logoSpotLight.position.set(-80, 32, 30);
-  // logoSpotLight.target.position.set(logo.position);
   scene.add(logoSpotLight.target);
   scene.add(logoSpotLight);
 
@@ -179,12 +174,10 @@ function setupLight() {
   var light = new THREE.DirectionalLight(0xffffff, 0.2);
   light.position.setScalar(100);
   scene.add(light);
-
-  //createShadowHelpers();
 }
 
 function createGeometry() {
-  var ground_geometry = new THREE.PlaneGeometry(3000, 3000, 100, 100);
+  var ground_geometry = new THREE.PlaneGeometry(3000, 3000, 10);
   // for (var i = 0; i < ground_geometry.vertices.length; i++) {
   //   var vertex = ground_geometry.vertices[i];
   //   //vertex.z = NoiseGen.noise(vertex.x / 30, vertex.z / 30) * -1;
@@ -197,7 +190,7 @@ function createGeometry() {
       color: 'grey',
     }),
     0.8, //friction
-    0.5 //restituiton
+    0.1 //restituiton
   );
 
   ground = new Physijs.BoxMesh(ground_geometry, ground_material, 0);
@@ -209,11 +202,11 @@ function createGeometry() {
   const sunMat = new THREE.MeshBasicMaterial({ color: 'yellow' });
   const sun = new THREE.Mesh(sunGeo, sunMat);
 
-  sun.position.set(0, 1000, 100);
-  sun.layers.enable(0);
+  sun.position.set(0, 10000, 0);
+  //sun.layers.enable(0);
   scene.add(sun);
 
-  add3DGLTF('Logo3D.gltf', -55, 21, 1, 1, 0);
+  add3DGLTF('Logo3D.gltf', -55, 21, 8, 1, 0);
   const heroArray = ['I make applications', '\nfun to use'];
 
   for (let index = 0; index < heroArray.length; index++) {
@@ -223,6 +216,7 @@ function createGeometry() {
   const name = createUIText('F E L I P E \nR O D R I G U E S', -44, 26, 2, 3);
   const workLink = createUIText('W O R K', 20, 30, 2, 2);
   const contactLink = createUIText('C O N T A C T', 32, 30, 2, 2);
+  createCar();
 
   //createBloom();
 }
@@ -296,52 +290,60 @@ function createBloom() {
 }
 
 function playGame() {
-  if (!car) {
-    console.clear();
-    createCar();
-  } else {
-    console.log('Car on scence');
-  }
+  var targetPosition = new THREE.Vector3(0, -90, 40);
+
+  var duration = 4000;
+
+  tweenCamera(targetPosition, duration);
 }
 
 function createCar() {
   // camera.position.set(0, -200, 80);
-  add3DGLTF('CyberTruck.gltf', 0, 0, 2, 6, 2, 0);
+  add3DGLTF('CyberTruck.gltf', 0, 0, 4, 6, 2, 0);
 
   let carMaterial = Physijs.createMaterial(
     new THREE.MeshLambertMaterial({
-      color: 0xffff00,
-      opacity: 0.4,
-      transparent: true,
+      color: 0xff0000,
+      visible: false,
     }),
     0.8,
-    0.9
+    0.6
   );
+  let carWidth = 12;
+  let hoodGeometry = new THREE.BoxGeometry(carWidth, 17, 4);
+  let hoodMesh = new Physijs.BoxMesh(hoodGeometry, carMaterial, 1);
+  hoodMesh.position.set(0, 9, 1);
+  hoodMesh.rotation.x = -Math.PI / 10;
+  let bucketGeometry = new THREE.BoxGeometry(carWidth, 16, 4);
+  let bucketMesh = new Physijs.BoxMesh(bucketGeometry, carMaterial, 1);
+  bucketMesh.position.set(0, -6, 2);
+  bucketMesh.rotation.x = Math.PI / 16;
+
   let bodyGeometry = new THREE.BoxGeometry(16, 35, 0.01);
-  let bodyPhysicMesh = new Physijs.BoxMesh(bodyGeometry, carMaterial, 20);
-  //bodyPhysicMesh.position.z = 5;
+  let frameGeometry = new THREE.BoxGeometry(14, 35, 4);
+  let frameMesh = new Physijs.BoxMesh(frameGeometry, carMaterial, 1);
+  frameMesh.add(hoodMesh);
+  frameMesh.add(bucketMesh);
+  frameMesh.position.z = 4;
 
-  let frameGeometry = new THREE.BoxGeometry(1, 0.1, 0.1);
-  //let frameMesh = new THREE.Mesh(frameGeometry, carMaterial);
-
-  car = new Physijs.BoxMesh(frameGeometry, carMaterial, 1000);
-  car.add(bodyPhysicMesh);
+  let carMass = 1000;
+  car = new Physijs.BoxMesh(bodyGeometry, carMaterial, carMass);
+  car.add(frameMesh);
   car.castShadow = car.receiveShadow = true;
-
-  car.position.set(14, 10, 3.0);
+  car.position.set(0, 10, 2.5);
 
   //Car Lights
   let backLight = new THREE.RectAreaLight({
     color: 0xff0000,
     intensity: 10,
-    width: frameGeometry.width,
+    width: carWidth,
     height: 1,
   });
 
-  backLight.position.set(0, 0, 19.6);
-  const backLightGeo = new THREE.BoxGeometry(backLight.width, 1, 0.2);
+  backLight.position.set(0, -17.4, -4.5);
+  const backLightGeo = new THREE.BoxGeometry(backLight.width, 0.4, 0.2);
 
-  backLight.rotateX(90);
+  //backLight.rotateX(90);
   const backLightMat = new THREE.MeshPhongMaterial({
     color: 'red',
     emissive: 0xff0000,
@@ -367,36 +369,36 @@ function createCar() {
 
   const headLightGeo = new THREE.BoxGeometry(6.8, 0.5, 0.6);
   const headLightMat = new THREE.MeshPhongMaterial({
-    color: 'red',
-    emissive: 0xffffff,
+    color: 'white',
+    //  emissive: 0xffffff,
   });
   let headLightMesh = new THREE.Mesh(headLightGeo, headLightMat);
 
-  headLightMesh.position.set(headLight.position.copy);
+  headLightMesh.position.set(headLight.position);
 
-  headLight.position.set(0, 0, 9);
+  headLight.position.set(0, 20, 15);
 
-  let carSpotLight = new THREE.DirectionalLight(0xff0000, 10.5);
-  carSpotLight.castShadow = true;
-  carSpotLight.position.set(0, -20, 0);
+  // let carSpotLight = new THREE.DirectionalLight(0xff0000, 10.5);
+  // carSpotLight.castShadow = true;
+  // carSpotLight.position.set(0, -20, 0);
 
-  carSpotLight.target.position.set(car.position);
-  scene.add(carSpotLight.target);
+  // carSpotLight.target.position.set(car.position);
+  // scene.add(carSpotLight.target);
 
   backLight.add(backLightMesh);
   headLight.add(headLightMesh);
 
-  car.add(carSpotLight);
   car.add(follow);
   car.add(backLight);
+  car.add(headLight);
   goal.add(camera);
 
-  let suspension_stiffness = 8;
-  let suspension_compression = 2.5;
-  let suspension_damping = 3;
-  let max_suspension_travel = 500;
+  let suspension_stiffness = 10.5;
+  let suspension_compression = 1.85;
+  let suspension_damping = 0.8;
+  let max_suspension_travel = 400;
   let friction_slip = 10.5;
-  let max_suspension_force = 30000;
+  let max_suspension_force = 50000;
 
   vehicle = new Physijs.Vehicle(
     car,
@@ -409,21 +411,59 @@ function createCar() {
       max_suspension_force
     )
   );
-  scene.add(vehicle);
-  let wheelGeo = new THREE.CylinderGeometry(2.5, 2.5, 2, 12);
+  let wheelGeo = new THREE.CylinderGeometry(2.5, 2.5, 2.5, 12);
   wheelGeo.rotateZ(Math.PI / 2);
+  let wheelMat = new THREE.MeshStandardMaterial({
+    color: 'black',
+    visible: true,
+  });
 
+  function createPhysicsWheel(posX, posY, posZ) {
+    let wheelPhysicsMat = new Physijs.createMaterial(
+      new THREE.MeshStandardMaterial({
+        color: 'green',
+        visible: false,
+      }),
+      0.2,
+      0.2
+    );
+    let wheelPhysics = new Physijs.BoxMesh(
+      new THREE.BoxGeometry(4, 4, 4),
+      wheelPhysicsMat,
+      10
+    );
+
+    wheelPhysics.position.set(posX, posY, posZ);
+
+    return wheelPhysics;
+  }
+
+  scene.add(vehicle);
   for (let i = 0; i < 4; i++) {
+    let PosWheenInVehicle = new THREE.Vector3(
+      i % 2 === 0 ? -7 : 7,
+      i < 2 ? 12 : -10.5,
+      -2
+    );
+    let vec2 = new THREE.Vector3(0, 0, -1);
+    let physicalWheel = createPhysicsWheel(
+      PosWheenInVehicle.x,
+      PosWheenInVehicle.y,
+      1
+    );
+    console.log(physicalWheel);
+    car.add(physicalWheel);
     vehicle.addWheel(
       wheelGeo,
-      new THREE.MeshStandardMaterial({ color: 'black' }),
-      new THREE.Vector3(i % 2 === 0 ? -8 : 8, i < 2 ? 12 : -10.5, -2),
-      new THREE.Vector3(0, 0, -1),
+      wheelMat,
+      PosWheenInVehicle,
+      vec2,
       new THREE.Vector3(1, 0, 0),
-      0.5,
-      8,
-      true
+      0.2,
+      3,
+      i < 2 ? false : true
     );
+
     console.log('wheel added');
   }
 
@@ -483,17 +523,15 @@ function createCar() {
   scene.addEventListener('update', function () {
     if (input && vehicle) {
       if (input.direction !== null) {
-        input.steering += input.direction / 50;
-        if (input.steering < -0.6) input.steering = -0.6;
-        if (input.steering > 0.6) input.steering = 0.6;
+        input.steering += input.direction / 30;
+        if (input.steering < -0.4) input.steering = -0.4;
+        if (input.steering > 0.4) input.steering = 0.4;
       }
       vehicle.setSteering(input.steering, 0);
       vehicle.setSteering(input.steering, 1);
 
       if (input.power === true) {
-        if (input.forward) {
-          vehicle.applyEngineForce(5000 * input.forward);
-        }
+        vehicle.applyEngineForce(5000 * input.forward);
       } else if (input.power === false) {
         vehicle.setBrake(20, 2);
         vehicle.setBrake(20, 3);
@@ -502,12 +540,6 @@ function createCar() {
       }
     }
   });
-
-  var targetPosition = new THREE.Vector3(0, -80, 40);
-  var duration = 4000;
-
-  scene.simulate();
-  tweenCamera(targetPosition, duration);
 }
 
 function add3DGLTF(
@@ -515,7 +547,7 @@ function add3DGLTF(
   posX = 0,
   posY = 0,
   posZ = 0,
-  scale,
+  scale = 1,
   rotationOnXAxis = 1,
   rotationOnZAxis = 1,
   wheel = null,
@@ -550,7 +582,9 @@ function add3DGLTF(
       if (itemName === 'CyberTruck.gltf') {
         model.rotation.x = Math.PI / 2;
         car.add(model);
+        return;
       }
+      scene.add(model);
     },
 
     (xhr) => {
@@ -596,21 +630,16 @@ function tweenCamera(targetPosition, duration) {
       camera.lookAt(vehicle.mesh.position);
     })
     .onComplete(function () {
-      camera.position.copy(targetPosition);
-      camera.lookAt(vehicle.mesh.position);
+      console.log(camera.position);
+      isPlaying = true;
     });
   tween.start();
 }
 
 function animate() {
-  a.lerp(vehicle.mesh.position, 0.4);
-  b.copy(goal.position);
-
-  dir.copy(a).sub(b).normalize();
-  dis = a.distanceTo(b);
-  goal.position.addScaledVector(dir, dis);
-  goal.position.lerp(temp, 0.4);
-  temp.setFromMatrixPosition(follow.matrixWorld);
+  camera.position
+    .copy(vehicle.mesh.position)
+    .add(new THREE.Vector3(0, -100, 36.5));
   camera.lookAt(vehicle.mesh.position);
 }
 
@@ -618,14 +647,13 @@ function render() {
   requestAnimationFrame(render);
   render_stats.update();
   scene.simulate(undefined, 1);
-
   TWEEN.update();
-  renderer.render(scene, camera);
-  // camera.updateProjectionMatrix();
 
-  if (vehicle) {
+  renderer.render(scene, camera);
+  if (isPlaying && vehicle) {
     animate();
   }
+  camera.updateProjectionMatrix();
 }
 
 window.onload = () => {
@@ -770,7 +798,7 @@ function createUIText(
       height = 0.05,
       size = _size,
       curveSegments = 4,
-      bevelThickness = 0.2,
+      bevelThickness = 0,
       bevelSize = 0.01,
       bevelSegments = 3,
       bevelEnabled = true,
@@ -805,7 +833,7 @@ function createUIText(
     mesh.position.set(posX, posY, posZ);
     mesh.castShadow = true;
     // mesh.layers.enable(1);
-    mesh.name = 'text';
+    mesh.name = text;
     scene.add(mesh);
   });
 }
