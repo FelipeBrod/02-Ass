@@ -1,0 +1,313 @@
+{
+    "accessors": [
+        {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 1,
+            "max": [
+                0.0
+            ],
+            "min": [
+                0.0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": 1,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 2,
+            "componentType": 5126,
+            "count": 1,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 3,
+            "componentType": 5126,
+            "count": 1,
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 4,
+            "componentType": 5126,
+            "count": 28352,
+            "max": [
+                0.25882357358932495,
+                6.220322132110596,
+                4.345470428466797
+            ],
+            "min": [
+                -0.11759108304977417,
+                5.62982177734375,
+                4.008052825927734
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 5,
+            "componentType": 5126,
+            "count": 28352,
+            "type": "VEC2"
+        },
+        {
+            "bufferView": 6,
+            "componentType": 5126,
+            "count": 28352,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 7,
+            "componentType": 5125,
+            "count": 48480,
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 8,
+            "componentType": 5125,
+            "count": 47520,
+            "type": "SCALAR"
+        }
+    ],
+    "animations": [
+        {
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 0,
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": 0,
+                        "path": "scale"
+                    }
+                },
+                {
+                    "sampler": 2,
+                    "target": {
+                        "node": 0,
+                        "path": "rotation"
+                    }
+                }
+            ],
+            "name": "",
+            "samplers": [
+                {
+                    "input": 0,
+                    "interpolation": "LINEAR",
+                    "output": 1
+                },
+                {
+                    "input": 0,
+                    "interpolation": "LINEAR",
+                    "output": 2
+                },
+                {
+                    "input": 0,
+                    "interpolation": "LINEAR",
+                    "output": 3
+                }
+            ]
+        }
+    ],
+    "asset": {
+        "generator": "Adobe Creative Cloud",
+        "version": "2.0"
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 4
+        },
+        {
+            "buffer": 0,
+            "byteLength": 12,
+            "byteOffset": 4
+        },
+        {
+            "buffer": 0,
+            "byteLength": 12,
+            "byteOffset": 16
+        },
+        {
+            "buffer": 0,
+            "byteLength": 16,
+            "byteOffset": 28
+        },
+        {
+            "buffer": 0,
+            "byteLength": 340224,
+            "byteOffset": 44
+        },
+        {
+            "buffer": 0,
+            "byteLength": 226816,
+            "byteOffset": 340268
+        },
+        {
+            "buffer": 0,
+            "byteLength": 340224,
+            "byteOffset": 567084
+        },
+        {
+            "buffer": 0,
+            "byteLength": 193920,
+            "byteOffset": 907308
+        },
+        {
+            "buffer": 0,
+            "byteLength": 190080,
+            "byteOffset": 1101228
+        },
+        {
+            "buffer": 0,
+            "byteLength": 6628,
+            "byteOffset": 1291308
+        },
+        {
+            "buffer": 0,
+            "byteLength": 6628,
+            "byteOffset": 1297936
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 1304564,
+            "uri": "palm-realviz.bin"
+        }
+    ],
+    "images": [
+        {
+            "bufferView": 9,
+            "mimeType": "image/png",
+            "name": "BARK.PNG"
+        },
+        {
+            "bufferView": 10,
+            "mimeType": "image/png",
+            "name": "_LEAF.PNG"
+        }
+    ],
+    "materials": [
+        {
+            "alphaCutoff": 1.0,
+            "alphaMode": "MASK",
+            "doubleSided": true,
+            "emissiveFactor": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "name": "s",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.49803921580314636,
+                    0.49803921580314636,
+                    0.49803921580314636,
+                    1.0
+                ],
+                "baseColorTexture": {
+                    "index": 0
+                },
+                "metallicFactor": 0.07999999821186066,
+                "roughnessFactor": 33.53333282470703
+            }
+        },
+        {
+            "alphaCutoff": 1.0,
+            "alphaMode": "MASK",
+            "doubleSided": true,
+            "emissiveFactor": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "name": "bfvd",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.49803921580314636,
+                    0.49803921580314636,
+                    0.49803921580314636,
+                    1.0
+                ],
+                "baseColorTexture": {
+                    "index": 1
+                },
+                "metallicFactor": 0.07999999821186066,
+                "roughnessFactor": 33.584312438964844
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "name": "palm01",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 6,
+                        "POSITION": 4,
+                        "TEXCOORD_0": 5
+                    },
+                    "indices": 7,
+                    "material": 0,
+                    "mode": 4
+                },
+                {
+                    "attributes": {
+                        "NORMAL": 6,
+                        "POSITION": 4,
+                        "TEXCOORD_0": 5
+                    },
+                    "indices": 8,
+                    "material": 1,
+                    "mode": 4
+                }
+            ]
+        }
+    ],
+    "nodes": [
+        {
+            "mesh": 0,
+            "name": "palm01",
+            "rotation": [
+                0.7071033716201782,
+                0.0021963531617075205,
+                -0.0021963531617075205,
+                0.7071033716201782
+            ],
+            "scale": [
+                0.00023368776601273566,
+                0.00023368780966848135,
+                0.00023368776601273566
+            ],
+            "translation": [
+                0.095578134059906,
+                5.632352828979492,
+                4.189727306365967
+            ]
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "name": "Scene",
+            "nodes": [
+                0
+            ]
+        }
+    ],
+    "textures": [
+        {
+            "source": 0
+        },
+        {
+            "source": 1
+        }
+    ]
+}

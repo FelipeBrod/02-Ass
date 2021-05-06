@@ -7,7 +7,7 @@ void main() {
 
 const _FS = `
 void main() {
-  gl_FragColor = vec4(.6, .6, .6, 1.0);
+  gl_FragColor = vec4(.9, .3, .3, 1.0);
 }`;
 
 let isPlaying = false;
@@ -23,10 +23,12 @@ let params = {
   bloomRadius: 1.6,
 };
 
+let sky, sun;
+
 //Car
 
 //const carSpotLight;
-let truck;
+let truck, backLightMesh;
 
 let movingBack = false;
 let rr, rl, fl, fr;
@@ -37,7 +39,7 @@ let friction = 0.9; //high
 let frConstraint, flConstraint, rrConstraint, rlConstraint;
 
 //Scene
-let ground;
+let ground, material;
 let render_stats, physics_stats;
 let renderer, scene, camera, orbitControl;
 let moon = new THREE.Object3D();
@@ -65,7 +67,7 @@ var cameraDistance = 3;
 
 //Assets
 const textLoader = new THREE.FontLoader();
-const textureLoader = new THREE.TextureLoader();
+
 const regularFontPath = '../../assets/fonts/Poppins_Light_Regular.json';
 const loader = new THREE.GLTFLoader();
 const audioLoader = new THREE.AudioLoader();
@@ -112,24 +114,27 @@ function onWindowResize() {
   render();
 }
 function init() {
-  render_stats = new Stats();
-  render_stats.domElement.style.position = 'absolute';
-  render_stats.domElement.style.top = '1px';
-  render_stats.domElement.style.zIndex = 100;
-  document.getElementById('viewport').appendChild(render_stats.domElement);
-
   scene = new Physijs.Scene();
   scene.setGravity(new THREE.Vector3(0, 0, -80));
   // scene.background = new THREE.Color(0xe1e1e1);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
-  // renderer.setClearColor(0x101000);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
-  document.body.appendChild(renderer.domElement);
+
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.8;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
+  render_stats = new Stats();
+  render_stats.domElement.style.position = 'absolute';
+  render_stats.domElement.style.top = '1px';
+  render_stats.domElement.style.zIndex = 100;
+
+  document.body.appendChild(renderer.domElement);
+  document.getElementById('viewport').appendChild(render_stats.domElement);
   const workButton = document.getElementById('startButton');
   workButton.addEventListener(
     'click',
@@ -154,22 +159,22 @@ function setupCamera() {
 }
 
 function setupLight() {
-  const ambientLight = new THREE.AmbientLight(0xeeeeee, 2.0);
+  const ambientLight = new THREE.AmbientLight(0xeeeeee, 0.2);
   scene.add(ambientLight);
 
   logoSpotLight = new THREE.DirectionalLight(0xffffff, 0.5);
   logoSpotLight.castShadow = true;
   logoSpotLight.position.set(-80, 32, 30);
   scene.add(logoSpotLight.target);
-  scene.add(logoSpotLight);
+  //scene.add(logoSpotLight);
 
-  const sunLight = new THREE.PointLight(0xeeeeee, 10.0);
+  const sunLight = new THREE.PointLight(0xeeeeee, 1.0);
   sunLight.position.set(10, 1000, 10);
   scene.add(sunLight);
 
   const topLight = new THREE.PointLight(0xffffff, 1.0);
   topLight.position.set(0, 0, 100);
-  scene.add(topLight);
+  //scene.add(topLight);
 
   var light = new THREE.DirectionalLight(0xffffff, 0.2);
   light.position.setScalar(100);
@@ -177,33 +182,19 @@ function setupLight() {
 }
 
 function createGeometry() {
-  var ground_geometry = new THREE.PlaneGeometry(3000, 3000, 10);
-  // for (var i = 0; i < ground_geometry.vertices.length; i++) {
-  //   var vertex = ground_geometry.vertices[i];
-  //   //vertex.z = NoiseGen.noise(vertex.x / 30, vertex.z / 30) * -1;
-  // }
-  // ground_geometry.computeFaceNormals();
-  // ground_geometry.computeVertexNormals();
+  var date = new Date();
+  var pn = new Perlin('rnd' + date.getTime());
+  var map = createHeightMap(pn);
+  scene.add(map);
 
-  let ground_material = new Physijs.createMaterial(
-    new THREE.MeshBasicMaterial({
-      color: 'grey',
-    }),
-    0.8, //friction
-    0.1 //restituiton
-  );
+  const sunGeo = new THREE.SphereBufferGeometry(200, 128, 128);
+  const sunMat = new THREE.MeshLambertMaterial({
+    color: 'yellow',
+    emissive: 0xffff00,
+  });
 
-  ground = new Physijs.BoxMesh(ground_geometry, ground_material, 0);
-
-  ground.receiveShadow = true;
-  scene.add(ground);
-
-  const sunGeo = new THREE.SphereBufferGeometry(2000, 128, 128);
-  const sunMat = new THREE.MeshBasicMaterial({ color: 'yellow' });
   const sun = new THREE.Mesh(sunGeo, sunMat);
-
   sun.position.set(0, 10000, 0);
-  //sun.layers.enable(0);
   scene.add(sun);
 
   add3DGLTF('Logo3D.gltf', -55, 21, 8, 1, 0);
@@ -217,7 +208,7 @@ function createGeometry() {
   const workLink = createUIText('W O R K', 20, 30, 2, 2);
   const contactLink = createUIText('C O N T A C T', 32, 30, 2, 2);
   createCar();
-
+  createIgloo(90, 520, 0, 60, true);
   //createBloom();
 }
 
@@ -297,6 +288,124 @@ function playGame() {
   tweenCamera(targetPosition, duration);
 }
 
+function createIgloo(
+  posX = 0,
+  posY = 0,
+  posZ = 0,
+  radius = 20,
+  isTreeInside = false
+) {
+  let iglooGeo = new THREE.CylinderGeometry(radius, radius, 200, 64, 32);
+  let iglooMat = new THREE.MeshPhysicalMaterial({
+    color: 0xcccccccc,
+    wireframe: true,
+    metalness: 0.9,
+    vertexColors: true,
+    wireframeLinewidth: 5,
+  });
+  let iglooMesh = new THREE.Mesh(iglooGeo, iglooMat);
+  let physicalglooMat = new Physijs.createMaterial(
+    new THREE.MeshLambertMaterial({
+      color: 0xc4c4c455,
+      transparent: true,
+      opacity: 0.4,
+    })
+  );
+
+  let physicalIglooMesh = new Physijs.CylinderMesh(
+    iglooGeo,
+    physicalglooMat,
+    0
+  );
+
+  iglooMesh.position.set(posX, posY, posZ);
+  iglooMesh.castShadow = true;
+  scene.add(iglooMesh);
+  physicalIglooMesh.position.set(posX, posY, posZ - 0.2);
+  scene.add(physicalIglooMesh);
+
+  const numberOfTrees = calculateTreesInIglooArea(radius);
+}
+
+function calculateTreesInIglooArea(radius) {
+  const treeArea = 625; //25*25
+  const area = 3.141592 * (radius * radius);
+  const numberOfTrees = Math.floor(area / treeArea);
+  console.log(numberOfTrees / 4); //1/4 of the space used for trees
+
+  return numberOfTrees;
+}
+
+function createTree(posX = 0, posY = 0, posZ = 0) {
+  const random = Math.random();
+  const random2 = Math.random();
+  const crownHeight = random * 20 + 10;
+  const crownBottonRadius = random * 15 + 10;
+  const crownRadius = random * 6 + 10;
+  const crownColor = new THREE.Color();
+  crownColor.setHex(random * 0x00ff00);
+  crownColor.b = random * 0.3; //getting variants of green
+  crownColor.r = random * 0.4; //getting variants of green
+
+  const icoDetail = Math.floor(random * 2);
+
+  const crownGeometry =
+    random2 < 0.3
+      ? new THREE.ConeGeometry(crownBottonRadius, crownHeight, 32)
+      : random2 < 0.6
+      ? new THREE.IcosahedronGeometry(crownRadius, icoDetail)
+      : new THREE.DodecahedronGeometry(crownRadius, icoDetail);
+
+  const crownMaterial = new THREE.MeshBasicMaterial({
+    color: crownColor,
+  });
+  const crownMesh = new THREE.Mesh(crownGeometry, crownMaterial);
+
+  const trunkRadius = 2;
+  const trunkHeight = 25;
+  const trunkColor = 0x42280e;
+  const trunkGeometry = new THREE.CylinderGeometry(
+    trunkRadius,
+    trunkRadius,
+    trunkHeight,
+    6
+  );
+  const trunkMaterial = new THREE.MeshBasicMaterial({ color: trunkColor });
+  const trunkMesh = new THREE.Mesh(trunkGeometry, trunkMaterial);
+
+  crownMesh.position.set(0, trunkHeight - crownRadius, 0);
+  trunkMesh.rotation.x = Math.PI / 2;
+  trunkMesh.position.set(posX, posY, trunkHeight / 2);
+  trunkMesh.add(crownMesh);
+
+  scene.add(trunkMesh);
+}
+
+function importTrees() {
+  new THREE.BufferGeometryLoader()
+    .setPath('./assets/textures/')
+    .load('palm-realviz.gltf', function (geometry) {
+      material = new THREE.MeshNormalMaterial();
+
+      console.log('tree added');
+      geometry.computeVertexNormals();
+
+      makeInstanced(geometry);
+    });
+}
+
+function makeInstanced(geometry) {
+  const matrix = new THREE.Matrix4();
+  const mesh = new THREE.InstancedMesh(geometry, material, 30);
+
+  for (let i = 0; i < 30; i++) {
+    randomizeMatrix(matrix);
+    mesh.setMatrixAt(i, matrix);
+  }
+
+  scene.add(mesh);
+}
+
 function createCar() {
   // camera.position.set(0, -200, 80);
   add3DGLTF('CyberTruck.gltf', 0, 0, 4, 6, 2, 0);
@@ -326,7 +435,7 @@ function createCar() {
   frameMesh.add(bucketMesh);
   frameMesh.position.z = 4;
 
-  let carMass = 1000;
+  let carMass = 800;
   car = new Physijs.BoxMesh(bodyGeometry, carMaterial, carMass);
   car.add(frameMesh);
   car.castShadow = car.receiveShadow = true;
@@ -348,7 +457,7 @@ function createCar() {
     color: 'red',
     emissive: 0xff0000,
   });
-  let backLightMesh = new THREE.Mesh(backLightGeo, backLightMat);
+  backLightMesh = new THREE.Mesh(backLightGeo, backLightMat);
 
   backLightMesh.position.set(
     backLight.position.x,
@@ -360,9 +469,6 @@ function createCar() {
 
   let headLight = new THREE.RectAreaLight({
     color: 'white',
-    intensity: 10,
-    width: 5,
-    height: 1,
   });
 
   headLight.position.set(0, 19.4, 0);
@@ -370,20 +476,9 @@ function createCar() {
   const headLightGeo = new THREE.BoxGeometry(6.8, 0.5, 0.6);
   const headLightMat = new THREE.MeshPhongMaterial({
     color: 'white',
-    //  emissive: 0xffffff,
   });
   let headLightMesh = new THREE.Mesh(headLightGeo, headLightMat);
-
   headLightMesh.position.set(headLight.position);
-
-  headLight.position.set(0, 20, 15);
-
-  // let carSpotLight = new THREE.DirectionalLight(0xff0000, 10.5);
-  // carSpotLight.castShadow = true;
-  // carSpotLight.position.set(0, -20, 0);
-
-  // carSpotLight.target.position.set(car.position);
-  // scene.add(carSpotLight.target);
 
   backLight.add(backLightMesh);
   headLight.add(headLightMesh);
@@ -393,12 +488,12 @@ function createCar() {
   car.add(headLight);
   goal.add(camera);
 
-  let suspension_stiffness = 10.5;
-  let suspension_compression = 1.85;
-  let suspension_damping = 0.8;
-  let max_suspension_travel = 400;
+  let suspension_stiffness = 18.5;
+  let suspension_compression = 1.25;
+  let suspension_damping = 2;
+  let max_suspension_travel = 800;
   let friction_slip = 10.5;
-  let max_suspension_force = 50000;
+  let max_suspension_force = 1000000;
 
   vehicle = new Physijs.Vehicle(
     car,
@@ -439,19 +534,18 @@ function createCar() {
   }
 
   scene.add(vehicle);
+  let vec2 = new THREE.Vector3(0, 0, -1);
   for (let i = 0; i < 4; i++) {
     let PosWheenInVehicle = new THREE.Vector3(
       i % 2 === 0 ? -7 : 7,
       i < 2 ? 12 : -10.5,
       -2
     );
-    let vec2 = new THREE.Vector3(0, 0, -1);
     let physicalWheel = createPhysicsWheel(
       PosWheenInVehicle.x,
       PosWheenInVehicle.y,
       1
     );
-    console.log(physicalWheel);
     car.add(physicalWheel);
     vehicle.addWheel(
       wheelGeo,
@@ -483,13 +577,20 @@ function createCar() {
       case 'ArrowUp':
         input.forward = 1;
         input.power = true;
+        backLightMesh.emissive = false;
         break;
 
       case 's':
       case 'ArrowDown':
         input.forward = -1;
         input.power = true;
+        backLightMesh.emissive = true;
         break;
+    }
+    if (event.code === 'Space') {
+      console.log('brack');
+      vehicle.setBrake(200, 2);
+      vehicle.setBrake(200, 3);
     }
   });
 
@@ -518,41 +619,36 @@ function createCar() {
         input.forward = null;
         break;
     }
+    if (event.code === 'Space') {
+      console.log('brack go');
+      input.power = null;
+      input.forward = null;
+    }
   });
 
   scene.addEventListener('update', function () {
-    if (input && vehicle) {
-      if (input.direction !== null) {
-        input.steering += input.direction / 30;
-        if (input.steering < -0.4) input.steering = -0.4;
-        if (input.steering > 0.4) input.steering = 0.4;
-      }
-      vehicle.setSteering(input.steering, 0);
-      vehicle.setSteering(input.steering, 1);
+    if (input.direction !== null) {
+      input.steering += input.direction / 30;
+      if (input.steering < -0.4) input.steering = -0.4;
+      if (input.steering > 0.4) input.steering = 0.4;
+    }
+    vehicle.setSteering(input.steering, 0);
+    vehicle.setSteering(input.steering, 1);
 
-      if (input.power === true) {
-        vehicle.applyEngineForce(5000 * input.forward);
-      } else if (input.power === false) {
-        vehicle.setBrake(20, 2);
-        vehicle.setBrake(20, 3);
-      } else {
-        vehicle.applyEngineForce(0);
+    if (input.power === true) {
+      vehicle.applyEngineForce(5000 * input.forward);
+      if (input.forward < 0) {
       }
+    } else {
+      vehicle.applyEngineForce(0);
+    }
+    if (isPlaying) {
+      animate();
     }
   });
 }
 
-function add3DGLTF(
-  itemName,
-  posX = 0,
-  posY = 0,
-  posZ = 0,
-  scale = 1,
-  rotationOnXAxis = 1,
-  rotationOnZAxis = 1,
-  wheel = null,
-  right
-) {
+function add3DGLTF(itemName, posX = 0, posY = 0, posZ = 0, scale = 1) {
   loader.load(
     itemName,
     function (data) {
@@ -584,6 +680,12 @@ function add3DGLTF(
         car.add(model);
         return;
       }
+      if (itemName === 'tree01.gltf') {
+        model.rotation.x = Math.PI / 2;
+        scene.add(model);
+        return;
+      }
+
       scene.add(model);
     },
 
@@ -650,9 +752,7 @@ function render() {
   TWEEN.update();
 
   renderer.render(scene, camera);
-  if (isPlaying && vehicle) {
-    animate();
-  }
+
   camera.updateProjectionMatrix();
 }
 
@@ -661,6 +761,7 @@ window.onload = () => {
   setupCamera();
   setupLight();
   createGeometry();
+  initSky();
   render();
 };
 
@@ -855,4 +956,100 @@ function createShadowHelpers() {
     }
     scene.add(directionalShadowHelper);
   });
+}
+
+function createHeightMap(pn) {
+  const texture = new THREE.TextureLoader().load(
+    '../assets/textures/marsSurface.jpg',
+    function (texture) {
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      texture.offset.set(12, 12);
+      texture.repeat.set(64, 64);
+    }
+  );
+
+  const groundMaterial = Physijs.createMaterial(
+    new THREE.MeshStandardMaterial({
+      map: texture,
+      specular: 0x111111,
+      shininess: 1,
+    })
+  );
+
+  const groundGeometry = new THREE.PlaneGeometry(2000, 2000, 100, 100);
+  for (let i = 0; i < groundGeometry.vertices.length; i++) {
+    let vertex = groundGeometry.vertices[i];
+    let value = pn.noise(vertex.x / 12, vertex.y / 12, 0);
+    vertex.z = value * 10;
+  }
+  groundGeometry.computeFaceNormals();
+  groundGeometry.computeVertexNormals();
+
+  const ground = new Physijs.HeightfieldMesh(
+    groundGeometry,
+    groundMaterial,
+    0,
+    100,
+    100
+  );
+  // ground.rotation.y = Math.PI / -2;
+  //ground.rotation.y = -0.25;
+  ground.receiveShadow = true;
+  ground.position.z = -10;
+
+  return ground;
+}
+
+function initSky() {
+  // Add Sky
+  sky = new THREE.Sky();
+  sky.scale.setScalar(45000);
+  scene.add(sky);
+
+  sun = new THREE.Vector3();
+
+  /// GUI
+
+  const effectController = {
+    turbidity: 10,
+    rayleigh: 3,
+    mieCoefficient: 0.005,
+    mieDirectionalG: 0.7,
+    elevation: 2,
+    azimuth: 180,
+    exposure: renderer.toneMappingExposure,
+  };
+
+  function guiChanged() {
+    const uniforms = sky.material.uniforms;
+    uniforms['turbidity'].value = effectController.turbidity;
+    uniforms['rayleigh'].value = effectController.rayleigh;
+    uniforms['mieCoefficient'].value = effectController.mieCoefficient;
+    uniforms['mieDirectionalG'].value = effectController.mieDirectionalG;
+
+    const phi = THREE.MathUtils.degToRad(effectController.elevation - 90);
+    const theta = THREE.MathUtils.degToRad(90 + effectController.azimuth);
+
+    sun.setFromSphericalCoords(1, phi, theta);
+
+    uniforms['sunPosition'].value.copy(sun);
+
+    renderer.toneMappingExposure = effectController.exposure;
+  }
+
+  const gui = new dat.GUI();
+
+  gui.add(effectController, 'turbidity', 0.0, 20.0, 0.1).onChange(guiChanged);
+  gui.add(effectController, 'rayleigh', 0.0, 4, 0.001).onChange(guiChanged);
+  gui
+    .add(effectController, 'mieCoefficient', 0.0, 0.1, 0.001)
+    .onChange(guiChanged);
+  gui
+    .add(effectController, 'mieDirectionalG', 0.0, 1, 0.001)
+    .onChange(guiChanged);
+  gui.add(effectController, 'elevation', 0, 90, 0.1).onChange(guiChanged);
+  gui.add(effectController, 'azimuth', -180, 180, 0.1).onChange(guiChanged);
+  gui.add(effectController, 'exposure', 0, 1, 0.0001).onChange(guiChanged);
+
+  guiChanged();
 }
