@@ -444,18 +444,17 @@ function createCar() {
   //Car Lights
   let backLight = new THREE.RectAreaLight({
     color: 0xff0000,
-    intensity: 10,
+
     width: carWidth,
-    height: 1,
+    height: 0.1,
   });
 
-  backLight.position.set(0, -17.4, -4.5);
-  const backLightGeo = new THREE.BoxGeometry(backLight.width, 0.4, 0.2);
+  backLight.position.set(0, -8.8, 2.8);
+  const backLightGeo = new THREE.BoxGeometry(backLight.width, 0.5, 0.2);
 
   //backLight.rotateX(90);
-  const backLightMat = new THREE.MeshPhongMaterial({
+  const backLightMat = new THREE.MeshStandardMaterial({
     color: 'red',
-    emissive: 0xff0000,
   });
   backLightMesh = new THREE.Mesh(backLightGeo, backLightMat);
 
@@ -465,13 +464,13 @@ function createCar() {
     backLight.position.z
   );
 
-  backLight.position.set(0, 0, 10);
-
   let headLight = new THREE.RectAreaLight({
     color: 'white',
+    width: 10,
+    height: 20,
   });
 
-  headLight.position.set(0, 19.4, 0);
+  headLight.position.set(0, 20, 0);
 
   const headLightGeo = new THREE.BoxGeometry(6.8, 0.5, 0.6);
   const headLightMat = new THREE.MeshPhongMaterial({
@@ -489,11 +488,11 @@ function createCar() {
   goal.add(camera);
 
   let suspension_stiffness = 18.5;
-  let suspension_compression = 1.25;
-  let suspension_damping = 2;
-  let max_suspension_travel = 800;
-  let friction_slip = 10.5;
-  let max_suspension_force = 1000000;
+  let suspension_compression = 1.85;
+  let suspension_damping = 2.5;
+  let max_suspension_travel = 2000;
+  let friction_slip = 12.5;
+  let max_suspension_force = 9000000;
 
   vehicle = new Physijs.Vehicle(
     car,
@@ -591,6 +590,7 @@ function createCar() {
       console.log('brack');
       vehicle.setBrake(200, 2);
       vehicle.setBrake(200, 3);
+      backLightMesh.material.emissive.set(0xff0000);
     }
   });
 
@@ -623,6 +623,7 @@ function createCar() {
       console.log('brack go');
       input.power = null;
       input.forward = null;
+      backLightMesh.material.emissive.set(0x000000);
     }
   });
 
@@ -634,11 +635,8 @@ function createCar() {
     }
     vehicle.setSteering(input.steering, 0);
     vehicle.setSteering(input.steering, 1);
-
     if (input.power === true) {
-      vehicle.applyEngineForce(5000 * input.forward);
-      if (input.forward < 0) {
-      }
+      vehicle.applyEngineForce(6000 * input.forward);
     } else {
       vehicle.applyEngineForce(0);
     }
@@ -1028,7 +1026,7 @@ function initSky() {
     uniforms['mieDirectionalG'].value = effectController.mieDirectionalG;
 
     const phi = THREE.MathUtils.degToRad(effectController.elevation - 90);
-    const theta = THREE.MathUtils.degToRad(90 + effectController.azimuth);
+    const theta = THREE.MathUtils.degToRad(effectController.azimuth);
 
     sun.setFromSphericalCoords(1, phi, theta);
 
